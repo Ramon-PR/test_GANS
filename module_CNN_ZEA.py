@@ -158,7 +158,8 @@ def softmax(x):
 
 
 
-def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
+# def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
+def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model.to(device)
@@ -166,6 +167,7 @@ def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
     l, acc = [], []
     val_l, val_acc = [], []
+    best_acc, step = 0, 0
     for e in range(1, epochs+1): 
         _l, _acc = [], []
         model.train()
@@ -193,11 +195,36 @@ def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
                 # _acc.append(accuracy_score(y_b.cpu().numpy(), y_probas.cpu().numpy()))
         val_l.append(np.mean(_l))
         # val_acc.append(np.mean(_acc))
+
+# ---------------   Early stopping & best model ----------------------
+        # guardar mejor modelo
+        # if val_acc[-1] > best_acc:
+        #     best_acc = val_acc[-1]
+        #     torch.save(model.state_dict(), 'ckpt.pt')
+        #     step = 0
+        #     print(f"Mejor modelo guardado con acc {best_acc:.5f} en epoch {e}")
+    #     step += 1
+    #     # parar
+    #     if early_stopping and step > early_stopping:
+    #         print(f"Entrenamiento detenido en epoch {e} por no mejorar en {early_stopping} epochs seguidas")
+    #         break
+    #     if not e % log_each:
+    #         print(f"Epoch {e}/{epochs} loss {l[-1]:.5f} acc {acc[-1]:.5f} val_loss {val_l[-1]:.5f} val_acc {val_acc[-1]:.5f}")
+    # # cargar mejor modelo
+    # model.load_state_dict(torch.load('ckpt.pt'))
+# --------------------------------------------------------------------
+
         if not e % log_each:
             # print(f"Epoch {e}/{epochs} loss {l[-1]:.5f} acc {acc[-1]:.5f} val_loss {val_l[-1]:.5f} val_acc {val_acc[-1]:.5f}")
             print(f"Epoch {e}/{epochs} loss {l[-1]:.5f}  val_loss {val_l[-1]:.5f} ")
     # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'acc': acc, 'val_loss': val_l, 'val_acc': val_acc}
-    return {'epoch': list(range(1, epochs+1)), 'loss': l, 'val_loss': val_l}
+    # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'val_loss': val_l}
+    return {'epoch': list(range(1, len(l)+1)), 'loss': l, 'val_loss': val_l}
+
+
+
+
+
  
 # !!! Validación cruzada !!!
 # 
