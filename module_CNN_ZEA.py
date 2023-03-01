@@ -159,17 +159,24 @@ def softmax(x):
 
 
 # def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
-def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
+# def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
+def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model.to(device)
     criterion = torch.nn.MSELoss() # sum( (xi-yi)**2 )/n
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
     l, acc = [], []
     val_l, val_acc = [], []
     best_acc, step = 0, 0
     for e in range(1, epochs+1): 
         _l, _acc = [], []
+
+# ------- Optimizer learning rate scheduler --------------------------
+        for param_group in optimizer.param_groups:
+            lr.append(param_group['lr'])
+# --------------------------------------------------------------------
+
         model.train()
         for x_b, y_b in dataloader['train']:
             y_b = y_b.view(y_b.shape[0],-1)
@@ -203,7 +210,13 @@ def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stoppi
         #     torch.save(model.state_dict(), 'ckpt.pt')
         #     step = 0
         #     print(f"Mejor modelo guardado con acc {best_acc:.5f} en epoch {e}")
-    #     step += 1
+        # step += 1
+
+# ------- Optimizer learning rate scheduler --------------------------
+        if scheduler:
+            scheduler.step()
+# --------------------------------------------------------------------
+
     #     # parar
     #     if early_stopping and step > early_stopping:
     #         print(f"Entrenamiento detenido en epoch {e} por no mejorar en {early_stopping} epochs seguidas")
@@ -219,7 +232,7 @@ def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stoppi
             print(f"Epoch {e}/{epochs} loss {l[-1]:.5f}  val_loss {val_l[-1]:.5f} ")
     # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'acc': acc, 'val_loss': val_l, 'val_acc': val_acc}
     # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'val_loss': val_l}
-    return {'epoch': list(range(1, len(l)+1)), 'loss': l, 'val_loss': val_l}
+    return {'epoch': list(range(1, len(l)+1)), 'loss': l, 'val_loss': val_l, 'lr': lr}
 
 
 

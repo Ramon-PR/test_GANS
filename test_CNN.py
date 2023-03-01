@@ -61,7 +61,17 @@ dataloader = {
 n_channels, Hin, Win, Hout, Wout = 1, 32, 32, 32, 32
 model = CNN(n_channels, Hin, Win, Hout, Wout)
 
-hist = fit(model, dataloader, epochs=1000, log_each=10, weight_decay=0)
+
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+# optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
+
+# multiplica el lr por 0.1 cada 10 epochs
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, 0.1)
+# aumenta el lr por 5 epochs, luego decrece
+scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.0001, max_lr=0.01, step_size_up=5, step_size_down=25)
+
+
+hist = fit(model, dataloader, optimizer, scheduler, epochs=1000, log_each=10, weight_decay=0)
 
 import pandas as pd
 import matplotlib.pyplot as plt
