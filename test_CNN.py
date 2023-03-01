@@ -8,7 +8,8 @@ from pathlib import Path
 # import sys
 from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, CNN, fit
 
-path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
+# path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
+path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
 folder_Data = "DataBase_Zea"
 files = ["BalderRIR.mat", "FrejaRIR.mat", "MuninRIR.mat"]
 
@@ -60,7 +61,7 @@ dataloader = {
 n_channels, Hin, Win, Hout, Wout = 1, 32, 32, 32, 32
 model = CNN(n_channels, Hin, Win, Hout, Wout)
 
-hist = fit(model, dataloader, epochs=100, log_each=1, weight_decay=0)
+hist = fit(model, dataloader, epochs=1000, log_each=10, weight_decay=0)
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -71,7 +72,7 @@ pd.DataFrame(hist).plot(x='epoch', y=['loss', 'val_loss'], grid=True, ax=ax)
 plt.show()
 
 
-# %% 
+# %% PLOT EXAMPLE IMAGE
 
 idx=0
 image_in, label_in = dataset['val'][idx]
