@@ -166,7 +166,7 @@ def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, w
     model.to(device)
     criterion = torch.nn.MSELoss() # sum( (xi-yi)**2 )/n
     # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
-    l, acc = [], []
+    l, acc, lr = [], [], []
     val_l, val_acc = [], []
     best_acc, step = 0, 0
     for e in range(1, epochs+1): 
