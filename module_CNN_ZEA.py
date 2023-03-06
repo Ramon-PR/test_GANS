@@ -64,7 +64,8 @@ class ZeaDataset(torch.utils.data.Dataset):
         # change to torch tensor, convert to float32 
         # and add a dimension at the beginning (1,H,W) 
         # to indicate the number of channels (batch,C,H,W)
-        self.X = torch.from_numpy(X).float().unsqueeze(1)
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.X = torch.from_numpy(X).float().to(device).unsqueeze(1)
         self.target_transform = target_transform
         self.transform_inp = downsamp_transform
     
