@@ -56,6 +56,24 @@ class down_samp_transf(torch.nn.Module):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(stride={self.stride})"
 
+class down_samp2_transf(torch.nn.Module):
+    """Erase columns by giving value of val
+    """
+    def __init__(self, stride=2, val=0):
+        super().__init__()
+        self.stride = stride
+        self.val = val
+
+    def forward(self, img):
+        # img2 = np.copy(img)
+        img2 = torch.zeros(img.shape) + self.val
+
+        for col in range(0, img.shape[-1], self.stride):
+            img2[:,:,col] = img[:,:,col]
+        return img2
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(stride={self.stride})"
 
 class ZeaDataset(torch.utils.data.Dataset):
     # Constructor
