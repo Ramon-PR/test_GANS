@@ -1,13 +1,6 @@
 import torch
 import numpy as np
-# import matplotlib.pyplot as plt
 import pymatreader as pymat
-# from sklearn.metrics import accuracy_score
-
-# criterion = torch.nn.CrossEntropyLoss()
-# criterion = torch.nn.MSELoss() # sum( (xi-yi)**2 )/n
-# optimizer = torch.optim.SGD(model.parameters(), lr=0.8)
-# optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
 
 
 def load_DB_ZEA(path, nx, nt):
@@ -56,6 +49,7 @@ class down_samp_transf(torch.nn.Module):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(stride={self.stride})"
 
+
 class down_samp2_transf(torch.nn.Module):
     """Erase columns by giving value of val
     """
@@ -74,6 +68,7 @@ class down_samp2_transf(torch.nn.Module):
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(stride={self.stride})"
+
 
 class ZeaDataset(torch.utils.data.Dataset):
     # Constructor
@@ -104,67 +99,6 @@ class ZeaDataset(torch.utils.data.Dataset):
 
         return image, target
 
-# --------------------------------------------------------------------
-# MODEL
-# --------------------------------------------------------------------
-def dim_after_filter(dim_in, dim_kernel, pad, stripe):
-    return int((dim_in + 2*pad - dim_kernel)/stripe) + 1
-
-def block(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_maxpool=2, str_maxpool=2):
-    return torch.nn.Sequential(
-        torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
-        torch.nn.ReLU(),
-        torch.nn.MaxPool2d(kernel_maxpool, stride=str_maxpool)
-    )
-
-def block2(c_in, c_out):
-    return torch.nn.Sequential(
-        torch.nn.Linear(c_in, c_out),
-        torch.nn.ReLU()
-    )
-
-class CNN(torch.nn.Module):
-  def __init__(self, n_channels=1, Hin=32, Win=32, Hout=32, Wout=32):
-    super().__init__()
-
-    chan_in = n_channels 
-
-    n_filters1, n_filters2 = 5, 5
-    kernel_size1, kernel_size2 = 3, 5
-    pad1, pad2 = 1, 2
-    str1, str2 = 1, 1
-
-    kernel_maxpool, str_maxpool = 2, 2
-
-    self.Hin = Hin
-    self.Win = Win
-    self.Hout = Hout
-    self.Wout = Wout
-    
-    n_outputs = self.Hout* self.Wout
-
-    self.conv1 = block(chan_in, n_filters1, kernel_size1, pad1, str1)
-    H = dim_after_filter(Hin, kernel_size1, pad1, str1)
-    W = dim_after_filter(Win, kernel_size1, pad1, str1)
-    # if maxpool2d
-    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool) 
-
-    self.conv2 = block(n_filters1, n_filters2, kernel_size2, pad2, str2)
-    H = dim_after_filter(H, kernel_size2, pad2, str2)
-    W = dim_after_filter(W, kernel_size2, pad2, str2)
-    # if maxpool2d
-    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool)
-    
-    self.fc = torch.nn.Linear(n_filters2*H*W, n_outputs)
-
-  def forward(self, x):
-    x = self.conv1(x)
-    x = self.conv2(x)
-    x = x.view(x.shape[0], -1)
-    x = self.fc(x)
-    return x
-
-
 
 def softmax(x):
     return torch.exp(x) / torch.exp(x).sum(axis=-1,keepdims=True)
@@ -176,15 +110,11 @@ def softmax(x):
 #     return torch.argmax(y_probas, axis=1)
 
 
-
-# def fit(model, dataloader, epochs=10, log_each=1, weight_decay=0):
-# def fit(model, dataloader, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
 def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model.to(device)
     criterion = torch.nn.MSELoss() # sum( (xi-yi)**2 )/n
-    # optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=weight_decay)
     l, acc, lr = [], [], []
     val_l, val_acc = [], []
     best_acc, step = 0, 0
@@ -249,6 +179,7 @@ def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, w
         if not e % log_each:
             # print(f"Epoch {e}/{epochs} loss {l[-1]:.5f} acc {acc[-1]:.5f} val_loss {val_l[-1]:.5f} val_acc {val_acc[-1]:.5f}")
             print(f"Epoch {e}/{epochs} loss {l[-1]:.5f}  val_loss {val_l[-1]:.5f} ")
+
     # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'acc': acc, 'val_loss': val_l, 'val_acc': val_acc}
     # return {'epoch': list(range(1, epochs+1)), 'loss': l, 'val_loss': val_l}
     return {'epoch': list(range(1, len(l)+1)), 'loss': l, 'val_loss': val_l, 'lr': lr}

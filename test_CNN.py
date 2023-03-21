@@ -6,10 +6,11 @@ Created on Wed Feb 22 18:20:20 2023
 """
 from pathlib import Path
 # import sys
-from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, CNN, fit
+from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, fit
+from NNmodel_classes import CNN, CNN_mask
 
-# path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
-path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
+path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
+# path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
 folder_Data = "DataBase_Zea"
 files = ["BalderRIR.mat", "FrejaRIR.mat", "MuninRIR.mat"]
 
@@ -57,9 +58,13 @@ dataloader = {
 # num_classes = nt*nx
 # resnet.fc = torch.nn.Linear(resnet.fc.in_features, num_classes)
 # resnet
+from NNmodel_classes import CNN, CNN_mask
+
+nepochs=10
 
 n_channels, Hin, Win, Hout, Wout = 1, 32, 32, 32, 32
-model = CNN(n_channels, Hin, Win, Hout, Wout)
+# model = CNN(n_channels, Hin, Win, Hout, Wout)
+model = CNN_mask(n_channels, Hin, Win, Hout, Wout)
 
 
 optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
@@ -71,7 +76,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, 0.1)
 scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=0.0001, max_lr=0.01, step_size_up=5, step_size_down=25)
 
 
-hist = fit(model, dataloader, optimizer, scheduler, epochs=1000, log_each=10, weight_decay=0)
+hist = fit(model, dataloader, optimizer, scheduler, epochs=nepochs, log_each=10, weight_decay=0)
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -80,6 +85,10 @@ fig = plt.figure(dpi=200, figsize=(10,3))
 ax = plt.subplot(121)
 pd.DataFrame(hist).plot(x='epoch', y=['loss', 'val_loss'], grid=True, ax=ax)
 plt.show()
+
+# %%
+from NNmodel_classes import count_parameters
+print(count_parameters(model))
 
 
 # %% PLOT EXAMPLE IMAGE
