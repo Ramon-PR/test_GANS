@@ -37,6 +37,12 @@ def block2(c_in, c_out):
         torch.nn.ReLU()
     )
 
+def block_fc_tanh(c_in, c_out):
+    return torch.nn.Sequential(
+        torch.nn.Linear(c_in, c_out),
+        torch.nn.Tanh()
+    )
+
 def blockRelUMaxP_BN(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_maxpool=2, str_maxpool=2):
     return torch.nn.Sequential(
         torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
@@ -174,6 +180,89 @@ class CNN_batchnorm(torch.nn.Module):
     H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool)
     
     self.fc = torch.nn.Linear(n_filters2*H*W, n_outputs)
+
+  def forward(self, x):
+    x = self.conv1(x)
+    x = self.conv2(x)
+    x = x.view(x.shape[0], -1)
+    x = self.fc(x)
+    return x
+
+class CNNReLU_Tanh(torch.nn.Module):
+  def __init__(self, n_channels=1, Hin=32, Win=32, Hout=32, Wout=32):
+    super().__init__()
+
+    chan_in = n_channels 
+
+    n_filters1, n_filters2 = 5, 5
+    kernel_size1, kernel_size2 = 3, 5
+    pad1, pad2 = 1, 2
+    str1, str2 = 1, 1
+
+    kernel_maxpool, str_maxpool = 2, 2
+
+    self.Hin = Hin
+    self.Win = Win
+    self.Hout = Hout
+    self.Wout = Wout
+    
+    n_outputs = self.Hout* self.Wout
+
+    self.conv1 = blockRelUMaxP(chan_in, n_filters1, kernel_size1, pad1, str1)
+    H = dim_after_filter(Hin, kernel_size1, pad1, str1)
+    W = dim_after_filter(Win, kernel_size1, pad1, str1)
+    # if maxpool2d
+    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool) 
+
+    self.conv2 = blockRelUMaxP(n_filters1, n_filters2, kernel_size2, pad2, str2)
+    H = dim_after_filter(H, kernel_size2, pad2, str2)
+    W = dim_after_filter(W, kernel_size2, pad2, str2)
+    # if maxpool2d
+    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool)
+    
+    self.fc = block_fc_tanh(n_filters2*H*W, n_outputs)
+
+  def forward(self, x):
+    x = self.conv1(x)
+    x = self.conv2(x)
+    x = x.view(x.shape[0], -1)
+    x = self.fc(x)
+    return x
+
+
+class CNNTanh_Tanh(torch.nn.Module):
+  def __init__(self, n_channels=1, Hin=32, Win=32, Hout=32, Wout=32):
+    super().__init__()
+
+    chan_in = n_channels 
+
+    n_filters1, n_filters2 = 5, 5
+    kernel_size1, kernel_size2 = 3, 5
+    pad1, pad2 = 1, 2
+    str1, str2 = 1, 1
+
+    kernel_maxpool, str_maxpool = 2, 2
+
+    self.Hin = Hin
+    self.Win = Win
+    self.Hout = Hout
+    self.Wout = Wout
+    
+    n_outputs = self.Hout* self.Wout
+
+    self.conv1 = blockTanhMaxP(chan_in, n_filters1, kernel_size1, pad1, str1)
+    H = dim_after_filter(Hin, kernel_size1, pad1, str1)
+    W = dim_after_filter(Win, kernel_size1, pad1, str1)
+    # if maxpool2d
+    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool) 
+
+    self.conv2 = blockTanhMaxP(n_filters1, n_filters2, kernel_size2, pad2, str2)
+    H = dim_after_filter(H, kernel_size2, pad2, str2)
+    W = dim_after_filter(W, kernel_size2, pad2, str2)
+    # if maxpool2d
+    H, W = dim_after_filter(H, kernel_maxpool, 0, str_maxpool), dim_after_filter(W, kernel_maxpool, 0, str_maxpool)
+    
+    self.fc = block_fc_tanh(n_filters2*H*W, n_outputs)
 
   def forward(self, x):
     x = self.conv1(x)
