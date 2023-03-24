@@ -7,7 +7,6 @@ Created on Wed Feb 22 18:20:20 2023
 from pathlib import Path
 # import sys
 from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, fit
-from NNmodel_classes import CNN
 
 # path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
 # path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
@@ -60,14 +59,14 @@ dataloader = {
 # num_classes = nt*nx
 # resnet.fc = torch.nn.Linear(resnet.fc.in_features, num_classes)
 # resnet
-from NNmodel_classes import CNN
+from NNmodel_classes import CNN_batchnorm
 import timeit
 
 # nepochs=500
 
 n_channels, Hin, Win, Hout, Wout = 1, 32, 32, 32, 32
-model = CNN(n_channels, Hin, Win, Hout, Wout)
-# model = CNN_mask(n_channels, Hin, Win, Hout, Wout)
+# model = CNN(n_channels, Hin, Win, Hout, Wout)
+model = CNN_batchnorm(n_channels, Hin, Win, Hout, Wout)
 
 from NNmodel_classes import count_parameters
 # print(count_parameters(model))
@@ -76,10 +75,10 @@ print("\nNumber of trainable parameters: %i " % (count_parameters(model)))
 
 # %%
 
-nepochs=1000
+nepochs=500
 
 # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=0)
 
 # multiplica el lr por 0.1 cada 10 epochs
 # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, 0.1)
@@ -94,7 +93,6 @@ print("\nThe training time is %f sec" % (tStop - tStart))
 
 import pandas as pd
 import matplotlib.pyplot as plt
-
 
 fig = plt.figure(dpi=200, figsize=(3,3))
 ax = plt.subplot(211)

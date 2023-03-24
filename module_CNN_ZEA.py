@@ -2,6 +2,8 @@ import torch
 import numpy as np
 import pymatreader as pymat
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+# device="cpu"
 
 def load_DB_ZEA(path, nx, nt):
     #Load data
@@ -77,7 +79,8 @@ class ZeaDataset(torch.utils.data.Dataset):
         # change to torch tensor, convert to float32 
         # and add a dimension at the beginning (1,H,W) 
         # to indicate the number of channels (batch,C,H,W)
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
+        
         self.X = torch.from_numpy(X).float().to(device).unsqueeze(1)
         self.target_transform = target_transform
         self.transform_inp = downsamp_transform
@@ -111,7 +114,7 @@ def softmax(x):
 
 
 def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, weight_decay=0, early_stopping=0):
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    # device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model.to(device)
     criterion = torch.nn.MSELoss() # sum( (xi-yi)**2 )/n

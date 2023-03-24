@@ -7,7 +7,6 @@ Created on Wed Feb 22 18:20:20 2023
 from pathlib import Path
 # import sys
 from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, fit
-from NNmodel_classes import CNN
 
 # path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
 # path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
@@ -56,10 +55,6 @@ dataloader = {
 
 # %% Definir NN
 
-# resnet = torchvision.models.resnet18(pretrained=True)
-# num_classes = nt*nx
-# resnet.fc = torch.nn.Linear(resnet.fc.in_features, num_classes)
-# resnet
 from NNmodel_classes import CNN
 import timeit
 
@@ -74,18 +69,18 @@ from NNmodel_classes import count_parameters
 print("\nNumber of trainable parameters: %i " % (count_parameters(model)))
 
 
-# %%
+# %
 
-nepochs=1000
+nepochs=100
 
 # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
 
 # multiplica el lr por 0.1 cada 10 epochs
-# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, 0.1)
+# scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 10, 0.8)
 # aumenta el lr por 5 epochs, luego decrece
-# scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, max_lr=1e-1, step_size_up=10, step_size_down=40, cycle_momentum=False)
-scheduler=None
+scheduler = torch.optim.lr_scheduler.CyclicLR(optimizer, base_lr=1e-3, max_lr=5e-3, step_size_up=10, step_size_down=40, cycle_momentum=False)
+# scheduler=None
 
 tStart = timeit.default_timer()
 hist = fit(model, dataloader, optimizer, scheduler, epochs=nepochs, log_each=10, weight_decay=0)
@@ -95,7 +90,6 @@ print("\nThe training time is %f sec" % (tStop - tStart))
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
 fig = plt.figure(dpi=200, figsize=(3,3))
 ax = plt.subplot(211)
 pd.DataFrame(hist).plot(x='epoch', y=['loss', 'val_loss'], grid=True, ax=ax)
@@ -104,7 +98,7 @@ pd.DataFrame(hist).plot(x='epoch', y=['lr'], grid=True, ax=ax)
 plt.show()
 
 
-# %% PLOT EXAMPLE IMAGE
+#% PLOT EXAMPLE IMAGE
 
 idx=0
 image_in, label_in = dataset['val'][idx]
