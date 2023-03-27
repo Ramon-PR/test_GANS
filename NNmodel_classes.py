@@ -331,7 +331,7 @@ class CNN_2branch(torch.nn.Module):
     y = torch.cat((x1.view(x1.shape[0], -1), x2.view(x2.shape[0], -1)), -1)
     
     y = self.fc(y)
-    return x
+    return y
 
 
 

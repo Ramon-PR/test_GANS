@@ -3,6 +3,11 @@
 Created on Sun Mar 26 22:49:09 2023
 
 @author: Ramón Pozuelo
+
+Number of trainable parameters: 2622564 
+Epoch 100/100 loss 0.00108  val_loss 0.00189
+and another extra run:
+Epoch 400/400 loss 0.00005  val_loss 0.00071     
 """
 
 from pathlib import Path
@@ -75,7 +80,7 @@ print("\nNumber of trainable parameters: %i " % (count_parameters(model)))
 
 # %%
 
-nepochs=100
+nepochs=500
 
 # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
@@ -105,7 +110,7 @@ plt.show()
 
 # %% PLOT EXAMPLE IMAGE
 
-idx=0
+idx=200
 image_in, label_in = dataset['val'][idx]
 # Add batch dimension before inputting into the model
 image_in = image_in[None,:,:,:]
