@@ -17,11 +17,24 @@ def count_parameters(model):
 def dim_after_filter(dim_in, dim_kernel, pad, stripe):
     return int((dim_in + 2*pad - dim_kernel)/stripe) + 1
 
+def blockRelU(chan_in, chan_out, kernel_size=3, pad1=1, str1=1):
+    return torch.nn.Sequential(
+        torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
+        torch.nn.ReLU()
+    )
+
 def blockRelUMaxP(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_maxpool=2, str_maxpool=2):
     return torch.nn.Sequential(
         torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
         torch.nn.ReLU(),
         torch.nn.MaxPool2d(kernel_maxpool, stride=str_maxpool)
+    )
+
+def blockRelUMinP(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_minpool=2, str_minpool=2):
+    return torch.nn.Sequential(
+        torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
+        torch.nn.ReLU(),
+        torch.nn.MinPool2d(kernel_minpool, stride=str_minpool)
     )
 
 def blockTanhMaxP(chan_in, chan_out, kernel_size=3, pad1=1, str1=1, kernel_maxpool=2, str_maxpool=2):
@@ -270,3 +283,61 @@ class CNNTanh_Tanh(torch.nn.Module):
     x = x.view(x.shape[0], -1)
     x = self.fc(x)
     return x
+
+
+
+class CNN_2branch(torch.nn.Module):
+  def __init__(self, n_channels=1, Hin=32, Win=32, Hout=32, Wout=32):
+    super().__init__()
+
+    chan_in = n_channels 
+
+    n_filters1, n_filters2 = 5, 5
+    kernel_size1, kernel_size2 = 3, 3
+    pad1, pad2 = 1, 1
+    str1, str2 = 1, 1
+
+    kernel_maxpool, str_maxpool = 2, 2
+    self.kernel_minpool, self.str_minpool = 2, 2
+
+    self.Hin = Hin
+    self.Win = Win
+    self.Hout = Hout
+    self.Wout = Wout
+    
+    n_outputs = self.Hout* self.Wout
+
+    self.conv1 = blockRelUMaxP(chan_in, n_filters1, kernel_size1, pad1, str1)
+    H1 = dim_after_filter(Hin, kernel_size1, pad1, str1)
+    W1 = dim_after_filter(Win, kernel_size1, pad1, str1)
+    # if maxpool2d
+    H1, W1 = dim_after_filter(H1, kernel_maxpool, 0, str_maxpool), dim_after_filter(W1, kernel_maxpool, 0, str_maxpool) 
+
+    self.conv2 = blockRelU(chan_in, n_filters2, kernel_size2, pad2, str2)
+    H2 = dim_after_filter(Hin, kernel_size2, pad2, str2)
+    W2 = dim_after_filter(Win, kernel_size2, pad2, str2)
+    # if minpool2d
+    H2, W2 = dim_after_filter(H2, self.kernel_minpool, 0, self.str_minpool), dim_after_filter(W2, self.kernel_minpool, 0, self.str_minpool) 
+    
+    self.fc = torch.nn.Linear(n_filters1*H1*W1 + n_filters2*H2*W2, n_outputs)
+
+  def forward(self, x):
+    x1 = self.conv1(x)
+    
+    x2 = self.conv2(x)
+    x2 = -torch.nn.MaxPool2d(self.kernel_minpool, stride=self.str_minpool)(-x2)
+
+    
+    y = torch.cat((x1.view(x1.shape[0], -1), x2.view(x2.shape[0], -1)), -1)
+    
+    y = self.fc(y)
+    return x
+
+
+
+
+
+
+
+
+
