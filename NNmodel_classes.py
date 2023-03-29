@@ -17,6 +17,18 @@ def count_parameters(model):
 def dim_after_filter(dim_in, dim_kernel, pad, stripe):
     return int((dim_in + 2*pad - dim_kernel)/stripe) + 1
 
+class MinPool2d(torch.nn.Module):
+    def __init__(self, kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False):
+        super().__init__()
+  
+        self.kernel_size, self.stride = kernel_size, stride 
+        self.padding, self.dilation = padding, dilation
+        self.ceil_mode = ceil_mode
+  
+    def forward(self, x):
+        x = -torch.nn.MaxPool2d(self.kernel_size, self.stride, self.padding, self.dilation, self.ceil_mode)(-x)
+        return x
+
 def blockRelU(chan_in, chan_out, kernel_size=3, pad1=1, str1=1):
     return torch.nn.Sequential(
         torch.nn.Conv2d(chan_in, chan_out, kernel_size, padding=pad1, stride=str1),
