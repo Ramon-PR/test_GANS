@@ -81,7 +81,8 @@ class ZeaDataset(torch.utils.data.Dataset):
         # to indicate the number of channels (batch,C,H,W)
         # device = "cuda" if torch.cuda.is_available() else "cpu"
         
-        self.X = torch.from_numpy(X).float().to(device).unsqueeze(1)
+        # self.X = torch.from_numpy(X).float().to(device).unsqueeze(1)
+        self.X = torch.from_numpy(X).float().unsqueeze(1)
         self.target_transform = target_transform
         self.transform_inp = downsamp_transform
     
@@ -131,6 +132,7 @@ def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, w
 
         model.train()
         for x_b, y_b in dataloader['train']:
+            x_b, y_b = x_b.to(device), y_b.to(device)
             y_b = y_b.view(y_b.shape[0],-1)
             y_pred = model(x_b)
             loss = criterion(y_pred, y_b)
@@ -146,6 +148,7 @@ def fit(model, dataloader, optimizer, scheduler=None, epochs=100, log_each=10, w
         _l, _acc = [], []
         with torch.no_grad():
             for x_b, y_b in dataloader['val']:
+                x_b, y_b = x_b.to(device), y_b.to(device)
                 y_b = y_b.view(y_b.shape[0],-1)
                 y_pred = model(x_b)
                 loss = criterion(y_pred, y_b)

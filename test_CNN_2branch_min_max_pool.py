@@ -14,9 +14,9 @@ from pathlib import Path
 # import sys
 from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, fit
 
-path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
+# path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
 # path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
-# path_script = Path(r"C:\Users\keris\Desktop")
+path_script = Path(r"C:\Users\keris\Desktop")
 
 folder_Data = "DataBase_Zea"
 files = ["BalderRIR.mat", "FrejaRIR.mat", "MuninRIR.mat"]
@@ -61,24 +61,17 @@ dataloader = {
 
 # %% Definir NN
 
-# resnet = torchvision.models.resnet18(pretrained=True)
-# num_classes = nt*nx
-# resnet.fc = torch.nn.Linear(resnet.fc.in_features, num_classes)
-# resnet
 from NNmodel_classes import CNN_2branch
 import timeit
-
-# nepochs=500
 
 n_channels, Hin, Win, Hout, Wout = 1, 32, 32, 32, 32
 model = CNN_2branch(n_channels, Hin, Win, Hout, Wout)
 
 from NNmodel_classes import count_parameters
-# print(count_parameters(model))
 print("\nNumber of trainable parameters: %i " % (count_parameters(model)))
 
 
-# %%
+# %% Train the model
 
 nepochs=500
 
