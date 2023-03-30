@@ -28,6 +28,13 @@ class MinPool2d(torch.nn.Module):
     def forward(self, x):
         x = -torch.nn.MaxPool2d(self.kernel_size, self.stride, self.padding, self.dilation, self.ceil_mode)(-x)
         return x
+    
+    def extra_repr(self):
+        # (Optional)Set the extra information about this module. You can test
+        # it by printing an object of this class.
+        return 'kernel_size={}, stride={}, padding={}, dilation={}, ceil_mode={})'.format(
+            self.kernel_size, self.stride, self.padding, self.dilation, self.ceil_mode is not None)
+
 
 def blockRelU(chan_in, chan_out, kernel_size=3, pad1=1, str1=1):
     return torch.nn.Sequential(
