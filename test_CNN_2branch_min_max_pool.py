@@ -14,9 +14,9 @@ from pathlib import Path
 # import sys
 from module_CNN_ZEA import load_DB_ZEA, down_samp_transf, ZeaDataset, fit
 
-# path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
+path_script = Path(r"C:\Users\keris\Desktop\Postdoc")
 # path_script = Path(r"/scratch/ramonpr/3NoiseModelling")
-path_script = Path(r"C:\Users\keris\Desktop")
+# path_script = Path(r"C:\Users\keris\Desktop")
 
 folder_Data = "DataBase_Zea"
 files = ["BalderRIR.mat", "FrejaRIR.mat", "MuninRIR.mat"]
@@ -73,7 +73,7 @@ print("\nNumber of trainable parameters: %i " % (count_parameters(model)))
 
 # %% Train the model
 
-nepochs=500
+nepochs=10
 
 # optimizer = torch.optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3, weight_decay=0)
