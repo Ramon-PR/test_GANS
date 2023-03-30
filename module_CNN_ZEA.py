@@ -44,7 +44,7 @@ class down_samp_transf(torch.nn.Module):
         # img2 = np.copy(img)
         img2 = torch.clone(img)
 
-        for col in range(0, img.shape[-1], self.stride):
+        for col in range(1, img.shape[-1], self.stride):
             img2[:,:,col] = self.val
         return img2
 
@@ -53,7 +53,7 @@ class down_samp_transf(torch.nn.Module):
 
 
 class down_samp2_transf(torch.nn.Module):
-    """Erase columns by giving value of val
+    """Select columns with information
     """
     def __init__(self, stride=2, val=0):
         super().__init__()
@@ -64,7 +64,7 @@ class down_samp2_transf(torch.nn.Module):
         # img2 = np.copy(img)
         img2 = torch.zeros(img.shape) + self.val
 
-        for col in range(0, img.shape[-1], self.stride):
+        for col in range(1, img.shape[-1], self.stride):
             img2[:,:,col] = img[:,:,col]
         return img2
 
