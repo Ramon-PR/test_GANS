@@ -77,8 +77,6 @@ database = RirDataset(path[0:1], param_downsampling,
                       f_downsamp_RIR, target_transform, input_transform)
 
 
-
-
 idx = 114
 image, target, im_mask = database.__getitem__(idx)
 
@@ -101,43 +99,37 @@ plt.axis("off")
 plt.tight_layout()
 
 
+# %% Test dataset train and validation
 
+param_downsampling = {'ratio_t':1, 'ratio_x':0.5, 
+                      'kernel':(32, 32), 'stride':(32,32)}
 
+std=1
+transformaciones = torchvision.transforms.Compose([
+        torchvision.transforms.RandomHorizontalFlip(p=0.5),
+        torchvision.transforms.Normalize((0.0), (std)) # ( img - mean)/std
+    ])
 
-# %%
+f_downsamp_RIR = unif_downsamp_RIR
+target_transform = transformaciones
+input_transform = True
 
-
-
-# --- Uniform downsample of full RIR image -----------------------------------------
-ratioT = 1
-ratioX = 0.5
-
-i_file = 0
-RIR = load_DB_ZEA(path[i_file])
-maskX, maskT, id_X, id_T = unif_downsamp_RIR(RIR, ratio_t=ratioT, ratio_x=ratioX)
-Y0, submask0 = divide_RIR(RIR, maskX, kt=32, kx=32, strideT=32, strideX=32)
-
-i_file = 1
-RIR = load_DB_ZEA(path[i_file])
-maskX, maskT, id_X, id_T = unif_downsamp_RIR(RIR, ratio_t=ratioT, ratio_x=ratioX)
-Y1, submask1 = divide_RIR(RIR, maskX, kt=32, kx=32, strideT=32, strideX=32)
-
-i_file = 2
-RIR = load_DB_ZEA(path[i_file])
-maskX, maskT, id_X, id_T = unif_downsamp_RIR(RIR, ratio_t=ratioT, ratio_x=ratioX)
-Y2, submask2 = divide_RIR(RIR, maskX, kt=32, kx=32, strideT=32, strideX=32)
-
-Y = np.concatenate((Y0,Y1), axis=0)
-submask = np.concatenate((submask0,submask1), axis=0)
+# path[0:1]=='Balder', path[1:2]=='Freja', path[2:3]=='Munin'
+# path[0:2]=='Balder'&'Freja' 
 
 dataset = {
-    'train': RirDataset(Y, submask), #(X_train, y_train),
-    'val': RirDataset(Y2, submask2) #(X_val, y_val)
+    'train': RirDataset(path[0:2], param_downsampling, 
+                      unif_downsamp_RIR, target_transform, "crop"),
+    'val': RirDataset(path[2:3], param_downsampling, 
+                      unif_downsamp_RIR, None, "crop")
 }
 
 idx = 0
 
-image1, target1, submask1 = dataset['train'][idx]
+# image1, target1, submask1 = dataset['train'][idx]
+image1, target1, submask1 = dataset['val'][idx]
+
+
 fig = plt.figure(dpi=200, figsize=(3,2))
 ax = plt.subplot(131)
 plt.imshow(image1.squeeze(), cmap="gray")
@@ -145,33 +137,10 @@ plt.axis("off")
 ax = plt.subplot(132)
 plt.imshow(target1.squeeze(), cmap="gray")
 plt.axis("off")
-ax = plt.subplot(133)
-plt.imshow((image1*submask1).squeeze(0), cmap="gray")
-plt.axis("off")
-
-
-
 plt.tight_layout()
 
 
 
-
-# %%
-import numpy as np
-Y = np.concatenate((Y0,Y1), axis=0)
-
-print(Y0.shape)
-print(Y1.shape)
-print(Y.shape)
-
-X0 = torch.from_numpy(Y0).float().unsqueeze(1)
-X1 = torch.from_numpy(Y1).float().unsqueeze(1)
-# X = torch.stack((X0, X1), dim=0) # does not work
-X = torch.cat((X0, X1), dim=0) # it works
-
-print(X0.shape)
-print(X1.shape)
-print(X.shape)
 
 
 
