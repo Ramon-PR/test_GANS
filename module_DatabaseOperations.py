@@ -127,68 +127,68 @@ def unif_downsamp_RIR(RIR, ratio_t=1, ratio_x=0.5):
 
 
 
-# default_downsampling = {'ratio_t':1, 'ratio_x':0.5, 'kernel':(32, 32), 'stride':(32,32)}
+default_downsampling = {'ratio_t':1, 'ratio_x':0.5, 'kernel':(32, 32), 'stride':(32,32)}
 
-# class RirDataset(torch.utils.data.Dataset):
-#     # Constructor
-#     def __init__(self, paths, param_downsampling=default_downsampling, f_downsamp_RIR=unif_downsamp_RIR,  target_transform=None, input_transform=None):
-#     # def __init__(self, X, transform=None):
-#         # change to torch tensor, convert to float32 
-#         # and add a dimension at the beginning (1,H,W) 
-#         # to indicate the number of channels (batch,C,H,W)
-#         # device = "cuda" if torch.cuda.is_available() else "cpu"
+class RirDataset(torch.utils.data.Dataset):
+    # Constructor
+    def __init__(self, paths, param_downsampling=default_downsampling, f_downsamp_RIR=unif_downsamp_RIR,  target_transform=None, input_transform=None):
+    # def __init__(self, X, transform=None):
+        # change to torch tensor, convert to float32 
+        # and add a dimension at the beginning (1,H,W) 
+        # to indicate the number of channels (batch,C,H,W)
+        # device = "cuda" if torch.cuda.is_available() else "cpu"
         
-#         # Add dimension for batch
-#         self.paths = paths
-#         self.target_transform = target_transform
-#         self.input_transform = input_transform
+        # Add dimension for batch
+        self.paths = paths
+        self.target_transform = target_transform
+        self.input_transform = input_transform
         
-#         # Parameters downsampling and division of RIR image
-#         pd = param_downsampling
+        # Parameters downsampling and division of RIR image
+        pd = param_downsampling
 
-#         RIR = load_DB_ZEA(paths[0])
-#         maskX, maskT, id_X, id_T = f_downsamp_RIR(RIR, pd['ratio_t'], pd['ratio_x'])
-#         Y0, submask0 = divide_RIR(RIR, maskX, pd['kernel'][0], pd['kernel'][1], pd['stride'][0], pd['stride'][1])
-#         Y0 = torch.from_numpy(Y0).float().unsqueeze(1)
-#         submask0 = torch.from_numpy(submask0).float().unsqueeze(1)            
+        RIR = load_DB_ZEA(paths[0])
+        maskX, maskT, id_X, id_T = f_downsamp_RIR(RIR, pd['ratio_t'], pd['ratio_x'])
+        Y0, submask0 = divide_RIR(RIR, maskX, pd['kernel'][0], pd['kernel'][1], pd['stride'][0], pd['stride'][1])
+        Y0 = torch.from_numpy(Y0).float().unsqueeze(1)
+        submask0 = torch.from_numpy(submask0).float().unsqueeze(1)            
         
-#         self.X = Y0
-#         self.mask_col = submask0
+        self.X = Y0
+        self.mask_col = submask0
 
-#         for file in paths[1:]:
-#             RIR = load_DB_ZEA(paths[0])
-#             maskX, maskT, id_X, id_T = f_downsamp_RIR(RIR, pd['ratio_t'], pd['ratio_x'])
-#             Y0, submask0 = divide_RIR(RIR, maskX, pd['kernel'][0], pd['kernel'][1], pd['stride'][0], pd['stride'][1])
-#             Y0 = torch.from_numpy(Y0).float().unsqueeze(1)
-#             submask0 = torch.from_numpy(submask0).float().unsqueeze(1) 
+        for file in paths[1:]:
+            RIR = load_DB_ZEA(paths[0])
+            maskX, maskT, id_X, id_T = f_downsamp_RIR(RIR, pd['ratio_t'], pd['ratio_x'])
+            Y0, submask0 = divide_RIR(RIR, maskX, pd['kernel'][0], pd['kernel'][1], pd['stride'][0], pd['stride'][1])
+            Y0 = torch.from_numpy(Y0).float().unsqueeze(1)
+            submask0 = torch.from_numpy(submask0).float().unsqueeze(1) 
             
-#             self.X = torch.cat((self.X, Y0), dim=0)
-#             self.mask_col = torch.cat((self.mask_col, submask0), dim=0)
+            self.X = torch.cat((self.X, Y0), dim=0)
+            self.mask_col = torch.cat((self.mask_col, submask0), dim=0)
         
     
-#     # Return the number of data in our dataset
-#     def __len__(self):
-#         return len(self.X)
+    # Return the number of data in our dataset
+    def __len__(self):
+        return len(self.X)
     
     
-#     # Return the element idx in the dataset
-#     def __getitem__(self, idx):
-#         image = self.X[idx]
-#         im_mask = self.mask_col[idx]
-#         target = self.X[idx]
+    # Return the element idx in the dataset
+    def __getitem__(self, idx):
+        image = self.X[idx]
+        im_mask = self.mask_col[idx]
+        target = self.X[idx]
         
-#         if self.target_transform:
-#             C, H, W = target.size()
-#             # random Horizontal Flip of mask and image at the same time
-#             temp  = torch.cat((image, im_mask),dim=-2)
-#             temp = self.target_transform(temp)
+        if self.target_transform:
+            C, H, W = target.size()
+            # random Horizontal Flip of mask and image at the same time
+            temp  = torch.cat((image, im_mask),dim=-2)
+            temp = self.target_transform(temp)
             
-#             # Recuperate the transformed target and mask
-#             target, im_mask = torch.split(temp, H, dim=-2)
-#             image = target
+            # Recuperate the transformed target and mask
+            target, im_mask = torch.split(temp, H, dim=-2)
+            image = target
 
-#         if self.input_transform:
-#             # The input is the target image but downsampled with the mask
-#             image = target*im_mask
+        if self.input_transform:
+            # The input is the target image but downsampled with the mask
+            image = target*im_mask
             
-#         return image, target, im_mask
+        return image, target, im_mask
